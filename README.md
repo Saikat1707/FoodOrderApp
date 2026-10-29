@@ -1,261 +1,331 @@
-# 🍔 Online Food Ordering System — Backend
+# 🍔 Online Food Ordering System
 
-A RESTful backend service for an **Online Food Ordering System**, built with **Java** and **Spring Boot**. The system enables administrators to manage a catalog of food items and discounts, while users can browse available food, manage a shopping cart, and place orders.
+**A secure, RESTful backend for managing food catalogs, shopping carts, discounts, and orders.**
 
-The application is structured around a clean, layered architecture (controllers → services → persistence adapters → JPA repositories) and secured with **JWT-based authentication** and **role-based authorization**.
-
----
-
-## 📖 Table of Contents
-
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Prerequisites](#-prerequisites)
-- [Getting Started](#-getting-started)
-- [Database Setup](#-database-setup)
-- [API Endpoints Overview](#-api-endpoints-overview)
-- [Project Structure](#-project-structure)
-- [License](#-license)
+Built with Java 21 and Spring Boot, this project provides the backend foundation for an online food ordering platform. It combines JWT-based authentication, role-based authorization, and a layered architecture to separate API handling, business logic, and persistence.
 
 ---
 
-## ✨ Features
+## At a Glance
 
-### 👨‍💼 Admin Features
-- **Manage food items** — create, read, update, and delete food items (single or in bulk).
-- **Manage discounts** — create and update discounts, and apply a discount to multiple food items at once.
-- **Browse catalog** — paginated and sortable listing of all food items.
+| Component | Technology |
+|---|---|
+| Language | Java 21 |
+| Backend framework | Spring Boot 3.3.4 |
+| Database | MySQL 8 |
+| Persistence | Spring Data JPA, Hibernate |
+| Security | Spring Security, JWT |
+| Object mapping | MapStruct |
+| Boilerplate reduction | Lombok |
+| Build system | Gradle |
 
-### 🙋 User Features
-- **Register & log in** — account registration and JWT-based authentication.
-- **Browse food items** — view available food items with pagination and sorting.
-- **Shopping cart** — add items to the cart, update quantities, view cart contents, see the cart total, and remove one, many, or all items.
-- **Place orders** — convert the current cart into an order.
+## What Can It Do?
 
-### 🔐 Security
-- Stateless authentication using **JSON Web Tokens (JWT)**.
-- **Role-based access control** with `USER` and `ADMIN` roles.
-- Public endpoints (registration, login, health checks) and protected endpoints separated via configurable security paths.
+### 🛡️ Authentication & Access Control
+- Register new user accounts and authenticate existing users.
+- Issue JWTs for authenticated requests.
+- Enforce role-based access using `USER` and `ADMIN` roles.
+- Separate public endpoints from protected resources.
 
----
+### 🍕 Food Catalog
+- Create, retrieve, update, and delete food items.
+- Delete multiple food items in a single request.
+- Browse food listings with pagination and sorting.
 
-## 🛠 Tech Stack
+### 🛒 Cart Management
+- Add food items and manage their quantities.
+- Retrieve cart contents and calculate the cart total.
+- Remove individual items, selected items, or the entire cart.
 
-| Category            | Technology                                   |
-| ------------------- | -------------------------------------------- |
-| Language            | Java 21                                      |
-| Framework           | Spring Boot 3.3.4                             |
-| Spring Modules      | Spring Web, Spring Data JPA, Spring Security, Spring Actuator |
-| Authentication      | JWT (jjwt 0.12.6)                            |
-| Database            | MySQL 8 (SQL)                                |
-| ORM / Persistence   | Hibernate / JPA                              |
-| Object Mapping      | MapStruct 1.5.5                              |
-| Boilerplate         | Lombok                                       |
-| Build Tool          | Gradle                                       |
+### 📦 Order Processing
+- Place an order using the current shopping cart.
 
----
-
-## 📋 Prerequisites
-
-Before running the project, make sure you have the following installed:
-
-- **Java Development Kit (JDK) 21** or higher
-- **MySQL 8.x** server (running locally or remotely)
-- **Git**
-- *(Optional)* Gradle — the project ships with the **Gradle Wrapper** (`gradlew`), so a local Gradle installation is not required.
+### 🏷️ Discount Management
+- Create and update discounts.
+- Retrieve individual discounts or browse paginated listings.
+- Apply discounts to multiple food items.
 
 ---
 
-## 🚀 Getting Started
+## Architecture
 
-### 1. Clone the repository
+The application follows a layered, ports-and-adapters-inspired structure to keep API concerns, business rules, and database operations separated.
+
+```text
+┌─────────────────────────────────────┐
+│           REST API Layer            │
+│  Controllers · DTOs · Exceptions    │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│            Domain Layer              │
+│ Services · Models · Mappers · Enums  │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│          Persistence Layer           │
+│ Adapters · Repository Ports · JPA    │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│               MySQL                  │
+└─────────────────────────────────────┘
+```
+
+**Layer responsibilities**
+
+- **Application:** Handles HTTP requests, request/response DTOs, controllers, and exception handling.
+- **Domain:** Contains business logic, domain models, enums, mapping components, and security-related services.
+- **Persistence:** Connects domain operations to JPA entities and Spring Data repositories.
+- **Configuration:** Wires Spring Security, JWT filters, and supporting beans.
+
+---
+
+## Getting Started
+
+### Requirements
+
+Make sure you have the following installed:
+
+- JDK 21
+- MySQL 8.x
+- Git
+
+Gradle does not need to be installed separately because the repository includes the Gradle Wrapper.
+
+### 1. Get the source code
 
 ```bash
 git clone https://github.com/<your-username>/online-food-order-be.git
 cd online-food-order-be
 ```
 
-### 2. Configure the database
+Replace `<your-username>` with the GitHub account that hosts the repository.
 
-Create the MySQL database and update the credentials in
-`src/main/resources/application.properties` (see [Database Setup](#-database-setup) below).
+### 2. Create the database
 
-### 3. Build and run
-
-Using the Gradle Wrapper:
-
-```bash
-# On macOS / Linux
-./gradlew bootRun
-
-# On Windows
-gradlew.bat bootRun
-```
-
-To build an executable JAR instead:
-
-```bash
-./gradlew clean build
-java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
-```
-
-The application starts on **`http://localhost:8080`** by default.
-
-### 4. Verify it's running
-
-```bash
-curl http://localhost:8080/actuator/health
-# {"status":"UP"}
-```
-
----
-
-## 🗄 Database Setup
-
-The application connects to a MySQL database named **`online_food_order`**. Hibernate is configured with `ddl-auto=update`, so the schema (tables) is created and updated automatically on startup.
-
-### 1. Create the database
+Open MySQL and execute:
 
 ```sql
 CREATE DATABASE online_food_order;
 ```
 
-### 2. Configure the connection
+### 3. Configure the application
 
-The default configuration lives in `src/main/resources/application.properties`:
+Edit `src/main/resources/application.properties`:
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/online_food_order
-spring.datasource.username=root
-spring.datasource.password=root
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:root}
 
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 ```
 
-Update `spring.datasource.username` and `spring.datasource.password` to match your local MySQL credentials.
+The username and password above use environment-variable overrides with local-development defaults. Adjust them to match your MySQL setup.
 
-> **⚠️ Security note:** The repository ships with a sample JWT secret and database credentials for local development only. **Never commit real secrets.** For production, externalize sensitive values using environment variables or a secrets manager.
+If your project currently has additional database or Hibernate properties, retain those as needed.
+
+### 4. Start the application
+
+**macOS / Linux**
+
+```bash
+./gradlew bootRun
+```
+
+**Windows**
+
+```bat
+gradlew.bat bootRun
+```
+
+The server uses port `8080` by default.
+
+### 5. Verify the server
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Expected response when the application is healthy:
+
+```json
+{
+  "status": "UP"
+}
+```
+
+### Build the executable JAR
+
+```bash
+./gradlew clean build
+```
+
+Run the generated JAR:
+
+```bash
+java -jar build/libs/backend-0.0.1-SNAPSHOT.jar
+```
 
 ---
 
-## 🔌 API Endpoints Overview
+## API Reference
 
-All endpoints are prefixed with **`/api/v1`**. Protected endpoints require an `Authorization: Bearer <token>` header.
+Base URL:
 
-### 🔐 Authentication (`/api/v1/idm`)
+```text
+http://localhost:8080
+```
 
-| Method | Endpoint                | Description                          | Auth   |
-| ------ | ----------------------- | ------------------------------------ | ------ |
-| `POST` | `/api/v1/idm/register`  | Register a new user account          | Public |
-| `POST` | `/api/v1/idm/login`     | Authenticate and receive a JWT token | Public |
+Business APIs use the `/api/v1` prefix. Protected endpoints require a valid JWT in the request header:
 
-### 🍕 Food Items (`/api/v1/food`)
+```http
+Authorization: Bearer <your-token>
+```
 
-| Method   | Endpoint              | Description                                              |
-| -------- | --------------------- | ------------------------------------------------------- |
-| `POST`   | `/api/v1/food`        | Create a new food item                                  |
-| `GET`    | `/api/v1/food/{id}`   | Get a single food item by ID                            |
-| `GET`    | `/api/v1/food`        | List all food items (paginated & sortable)              |
-| `PUT`    | `/api/v1/food/{id}`   | Update an existing food item                            |
-| `DELETE` | `/api/v1/food/{id}`   | Delete a single food item                               |
-| `DELETE` | `/api/v1/food`        | Delete multiple food items (list of IDs in the body)    |
+### Identity & Authentication
 
-> Listing supports the query parameters `page`, `size`, `sortBy`, and `sortDirection` (e.g. `?page=0&size=10&sortBy=createdAt&sortDirection=desc`).
+Base path: `/api/v1/idm`
 
-### 🛒 Cart (`/api/v1/cart`)
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/v1/idm/register` | Register an account |
+| `POST` | `/api/v1/idm/login` | Authenticate and obtain a JWT |
 
-| Method   | Endpoint                         | Description                                            |
-| -------- | -------------------------------- | ------------------------------------------------------ |
-| `PUT`    | `/api/v1/cart`                   | Add a food item to the cart (`foodItemId`, `quantity`) |
-| `PUT`    | `/api/v1/cart/update`            | Update the quantity of a cart item                     |
-| `GET`    | `/api/v1/cart/cart-items`        | Get all items currently in the cart                    |
-| `GET`    | `/api/v1/cart/total`             | Get the number of items in the cart                    |
-| `DELETE` | `/api/v1/cart/item/{foodCartId}` | Remove a single item from the cart                     |
-| `DELETE` | `/api/v1/cart/items`             | Remove all items from the cart                         |
-| `DELETE` | `/api/v1/cart`                   | Remove multiple cart items (list of IDs in the body)   |
+### Food Items
 
-### 📦 Orders (`/api/v1/order`)
+Base path: `/api/v1/food`
 
-| Method | Endpoint        | Description                          |
-| ------ | --------------- | ------------------------------------ |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/v1/food` | Create a food item |
+| `GET` | `/api/v1/food` | List food items |
+| `GET` | `/api/v1/food/{id}` | Retrieve a food item |
+| `PUT` | `/api/v1/food/{id}` | Update a food item |
+| `DELETE` | `/api/v1/food/{id}` | Delete a food item |
+| `DELETE` | `/api/v1/food` | Delete multiple food items |
+
+Supported listing parameters include `page`, `size`, `sortBy`, and `sortDirection`.
+
+Example:
+
+```http
+GET /api/v1/food?page=0&size=10&sortBy=createdAt&sortDirection=desc
+```
+
+### Shopping Cart
+
+Base path: `/api/v1/cart`
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `PUT` | `/api/v1/cart` | Add a food item |
+| `PUT` | `/api/v1/cart/update` | Update a cart item's quantity |
+| `GET` | `/api/v1/cart/cart-items` | Retrieve cart items |
+| `GET` | `/api/v1/cart/total` | Retrieve the cart total/count |
+| `DELETE` | `/api/v1/cart/item/{foodCartId}` | Remove one item |
+| `DELETE` | `/api/v1/cart/items` | Remove all items |
+| `DELETE` | `/api/v1/cart` | Remove selected items |
+
+### Orders
+
+Base path: `/api/v1/order`
+
+| Method | Endpoint | Purpose |
+|---|---|---|
 | `POST` | `/api/v1/order` | Place an order from the current cart |
 
-### 🏷 Discounts (`/api/v1/discount`)
+### Discounts
 
-| Method | Endpoint                                       | Description                               |
-| ------ | ---------------------------------------------- | ----------------------------------------- |
-| `POST` | `/api/v1/discount`                             | Create a new discount                     |
-| `PUT`  | `/api/v1/discount/{id}`                        | Update an existing discount               |
-| `GET`  | `/api/v1/discount/{id}`                        | Get a single discount by ID               |
-| `GET`  | `/api/v1/discount`                             | List all discounts (paginated & sortable) |
-| `PUT`  | `/api/v1/discount/update-food-items-discounts` | Apply a discount to multiple food items   |
+Base path: `/api/v1/discount`
 
-### 👤 Users (`/api/v1/users`)
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/v1/discount` | Create a discount |
+| `GET` | `/api/v1/discount` | List discounts |
+| `GET` | `/api/v1/discount/{id}` | Retrieve a discount |
+| `PUT` | `/api/v1/discount/{id}` | Update a discount |
+| `PUT` | `/api/v1/discount/update-food-items-discounts` | Apply a discount to multiple food items |
 
-| Method | Endpoint             | Description      |
-| ------ | -------------------- | ---------------- |
-| `GET`  | `/api/v1/users/{id}` | Get a user by ID |
+### Users
 
-### 📈 Actuator
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/v1/users/{id}` | Retrieve a user by ID |
 
-| Method | Endpoint           | Description               | Auth   |
-| ------ | ------------------ | ------------------------- | ------ |
-| `GET`  | `/actuator/health` | Application health check  | Public |
-| `GET`  | `/actuator/info`   | Application info          | Public |
+### Application Monitoring
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/actuator/health` | Check application health |
+| `GET` | `/actuator/info` | Retrieve application information |
+
+Actual access permissions are governed by the application's Spring Security configuration.
 
 ---
 
-## 🏗 Project Structure
+## Repository Layout
 
-The codebase follows a layered, ports-and-adapters style architecture:
-
-```
+```text
 online-food-order-be/
-├── build.gradle                  # Gradle build configuration & dependencies
+├── src/
+│   ├── main/
+│   │   ├── java/com/foodorder/backend/
+│   │   │   ├── application/
+│   │   │   │   ├── controllers/
+│   │   │   │   ├── dtos/
+│   │   │   │   └── exception/
+│   │   │   ├── domain/
+│   │   │   │   ├── enums/
+│   │   │   │   ├── handlers/
+│   │   │   │   ├── mappers/
+│   │   │   │   ├── model/
+│   │   │   │   ├── providers/
+│   │   │   │   └── services/
+│   │   │   ├── persistence/
+│   │   │   │   ├── adapter/
+│   │   │   │   ├── entity/
+│   │   │   │   ├── jpa/
+│   │   │   │   └── repository/
+│   │   │   └── configration/
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── application-sqllogs.properties
+│   └── test/
+├── gradle/
+├── build.gradle
 ├── settings.gradle
-├── gradlew / gradlew.bat         # Gradle wrapper scripts
-└── src/
-    ├── main/
-    │   ├── java/com/foodorder/backend/
-    │   │   ├── OnlinefoodorderApplication.java   # Application entry point
-    │   │   ├── application/                       # Web / API layer
-    │   │   │   ├── controllers/                   # REST controllers (Food, Cart, Order, Discount, Idm, SysUser)
-    │   │   │   ├── dtos/                           # Request/response DTOs
-    │   │   │   └── exception/                      # Custom exceptions & global handler
-    │   │   ├── configration/
-    │   │   │   └── security/                       # Spring Security & JWT filter config
-    │   │   ├── domain/                             # Business / domain layer
-    │   │   │   ├── enums/                          # System enums (e.g. roles)
-    │   │   │   ├── handlers/                       # Auth entry point & access-denied handlers
-    │   │   │   ├── mappers/                        # MapStruct mappers
-    │   │   │   ├── model/                          # Domain models
-    │   │   │   ├── providers/                      # Identity provider
-    │   │   │   └── services/                       # Business logic & security services
-    │   │   └── persistence/                        # Persistence layer
-    │   │       ├── adapter/                        # Repository adapters
-    │   │       ├── entity/                         # JPA entities
-    │   │       ├── jpa/                            # Spring Data JPA repositories
-    │   │       └── repository/                     # Repository ports (interfaces)
-    │   └── resources/
-    │       ├── application.properties             # Main configuration
-    │       └── application-sqllogs.properties     # SQL logging profile
-    └── test/
-        └── java/com/foodorder/backend/            # Tests
+├── gradlew
+└── README.md
 ```
-
-**Layer responsibilities:**
-
-- **`application`** — exposes REST endpoints, validates input, and maps between DTOs and domain models.
-- **`domain`** — holds business logic, domain models, mappers, and security services.
-- **`persistence`** — translates domain models to JPA entities and persists them via Spring Data repositories.
-- **`configration`** — wires up Spring Security, the JWT authentication filter, and related beans.
 
 ---
 
-## 📄 License
+## Configuration & Security Notes
 
-This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for details.
+- Keep database credentials and JWT signing secrets out of version control.
+- Use environment variables or a secrets manager for sensitive configuration.
+- Use strong, unique JWT signing secrets outside local development.
+- Review database schema-management settings before deploying to production.
+- Keep dependencies updated and validate access rules for protected endpoints.
 
-> If you intend to publish this repository publicly, add a `LICENSE` file at the project root containing the full MIT license text (or your license of choice).
+Example environment variables:
+
+```bash
+export DB_USERNAME="your_mysql_username"
+export DB_PASSWORD="your_mysql_password"
+```
+
+Ensure your application's JWT configuration also reads its signing secret from a secure external configuration source before production deployment.
+
+---
+
+## License
+
+This project is intended to be distributed under the MIT License, as described in the original project documentation. Ensure a valid `LICENSE` file containing the full license text exists in the repository before publishing it under that license.
+
+---
+
+**Built with Java, Spring Boot, and MySQL.**
